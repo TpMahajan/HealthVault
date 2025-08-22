@@ -34,7 +34,9 @@ class Dashboard1 extends StatefulWidget {
 }
 
 class _Dashboard1State extends State<Dashboard1> {
+  String appbarTitle = "Dashboard";
   int _currentIndex = 0;
+  final tabs = ["Dashboard", "My Vault", "Qr", "Requests", "Settings"];
   late PageController _pageController;
 
   @override
@@ -52,10 +54,17 @@ class _Dashboard1State extends State<Dashboard1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text(appbarTitle, style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
           setState(() {
+            appbarTitle = tabs[index];
             _currentIndex = index;
           });
         },
@@ -68,7 +77,8 @@ class _Dashboard1State extends State<Dashboard1> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: NetworkImage('https://cdn-icons-png.flaticon.com/512/9203/9203764.png'),
+                    backgroundImage: NetworkImage(
+                        'https://cdn-icons-png.flaticon.com/512/9203/9203764.png'),
                   ),
                   SizedBox(width: 8),
                   Text(

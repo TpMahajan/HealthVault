@@ -1,21 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const ProfileName(),
-    );
-  }
-}
 
 class ProfileName extends StatefulWidget {
   const ProfileName({super.key});
@@ -53,12 +39,14 @@ class _ProfileNameState extends State<ProfileName> {
                 ),
                 const CircleAvatar(
                   radius: 40,
-                  backgroundImage: NetworkImage('https://cdn-icons-png.flaticon.com/512/9203/9203764.png'), // Placeholder for profile image
+                  backgroundImage: NetworkImage(
+                      'https://cdn-icons-png.flaticon.com/512/9203/9203764.png'), // Placeholder for profile image
                 ),
                 const SizedBox(height: 8),
                 Text(
                   name,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   email,
@@ -81,11 +69,13 @@ class _ProfileNameState extends State<ProfileName> {
                       const SizedBox(height: 8),
                       const Text(
                         'Mobile Number',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         mobile,
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -107,11 +97,15 @@ class _ProfileNameState extends State<ProfileName> {
                       const SizedBox(height: 8),
                       const Text(
                         'Aadhaar Card Number',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
                       ),
                       Text(
                         aadhaar,
-                        style: const TextStyle(fontSize: 16, color: Colors.white70),
+                        style: const TextStyle(
+                            fontSize: 16, color: Colors.white70),
                       ),
                     ],
                   ),
@@ -133,11 +127,13 @@ class _ProfileNameState extends State<ProfileName> {
                       const SizedBox(height: 8),
                       const Text(
                         'Date of Birth',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         dob,
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -283,7 +279,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter an email';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                      .hasMatch(value)) {
                     return 'Please enter a valid email';
                   }
                   return null;
@@ -301,7 +298,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a mobile number';
                   }
-                  if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value.replaceAll(RegExp(r'[\s()-]'), ''))) {
+                  if (!RegExp(r'^\+?[1-9]\d{1,14}$')
+                      .hasMatch(value.replaceAll(RegExp(r'[\s()-]'), ''))) {
                     return 'Please enter a valid mobile number';
                   }
                   return null;
@@ -320,7 +318,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     return 'Please enter an Aadhaar card number';
                   }
                   final cleanValue = value.replaceAll(RegExp(r'[-X ]'), '');
-                  if (cleanValue.length != 12 || !RegExp(r'^\d{12}$').hasMatch(cleanValue)) {
+                  if (cleanValue.length != 12 ||
+                      !RegExp(r'^\d{12}$').hasMatch(cleanValue)) {
                     return 'Please enter a valid 12-digit Aadhaar number';
                   }
                   return null;
@@ -352,19 +351,46 @@ class _EditProfilePageState extends State<EditProfilePage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // Return the updated values to the previous screen
-                      Navigator.pop(
-                        context,
-                        {
-                          'name': _nameController.text,
-                          'email': _emailController.text,
-                          'mobile': _mobileController.text,
-                          'aadhaar': _aadhaarController.text,
-                          'dob': _dobController.text,
-                        },
-                      );
+                      final user = FirebaseAuth.instance.currentUser;
+
+                      if (user != null) {
+                        // Prepare data
+                        final updatedData = {
+                          'name': _nameController.text.trim(),
+                          'email': _emailController.text.trim(),
+                          'mobile': _mobileController.text.trim(),
+                          'aadhaar': _aadhaarController.text.trim(),
+                          'dob': _dobController.text.trim(),
+                          'updatedAt': FieldValue.serverTimestamp(),
+                        };
+
+                        try {
+                          // Save to Firestore (update or create if missing)
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .set(updatedData, SetOptions(merge: true));
+
+                          // Return updated data to Profile screen
+                          Navigator.pop(context, updatedData);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Profile updated successfully!")),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text("Failed to update profile: $e")),
+                          );
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("No logged in user")),
+                        );
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

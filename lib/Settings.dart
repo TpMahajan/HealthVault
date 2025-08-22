@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:flutter/material.dart';
 
 import 'QR.dart';
@@ -12,22 +8,6 @@ import 'SettingPages/PrivacyPolicyPage.dart';
 import 'SettingPages/ProfilePageSetting.dart';
 import 'SettingPages/TermsOfServicesPage.dart';
 import 'loginScreen.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const SettingsPage(),
-    );
-  }
-}
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -44,57 +24,45 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Settings", style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
-        ),
-      ),
       body: ListView(
         padding: const EdgeInsets.all(10),
         children: [
           const SectionTitle("My Profile"),
-          _buildTile(Icons.person, "Personal Details", "View and edit your personal details",ProfileName()),
-
+          _buildTile(Icons.person, "Personal Details",
+              "View and edit your personal details", ProfileName()),
           const SectionTitle("Security"),
-          _buildTile(Icons.lock, "Password", "",ForgotPasswordScreen()),
-          _buildTile(Icons.fingerprint, "Biometrics", "",ProfileName()),
-
+          _buildTile(Icons.lock, "Password", "", ForgotPasswordScreen()),
+          _buildTile(Icons.fingerprint, "Biometrics", "", ProfileName()),
           const SectionTitle("QR & Sharing"),
-          _buildTile(Icons.qr_code, "Regenerate QR", "",QRPage()),
-          _buildTile(Icons.share, "Sharing Controls", "",QRPage()),
-
+          _buildTile(Icons.qr_code, "Regenerate QR", "", QRPage()),
+          _buildTile(Icons.share, "Sharing Controls", "", QRPage()),
           const SectionTitle("Notifications"),
-          _buildSwitchTile("Approvals", "Receive notifications for approvals", approvals, (val) {
+          _buildSwitchTile(
+              "Approvals", "Receive notifications for approvals", approvals,
+              (val) {
             setState(() => approvals = val);
           }),
-          _buildSwitchTile("Reminders", "Receive notifications for reminders", reminders, (val) {
+          _buildSwitchTile(
+              "Reminders", "Receive notifications for reminders", reminders,
+              (val) {
             setState(() => reminders = val);
           }),
-          _buildSwitchTile("System", "Receive system notifications", systemNotifs, (val) {
+          _buildSwitchTile(
+              "System", "Receive system notifications", systemNotifs, (val) {
             setState(() => systemNotifs = val);
           }),
-
           const SectionTitle("Privacy & Terms"),
-          _buildTile(Icons.privacy_tip, "Privacy Policy", "",PrivacyPolicy()),
-          _buildTile(Icons.description, "Terms of Service", "",TermsOfService()),
-
+          _buildTile(Icons.privacy_tip, "Privacy Policy", "", PrivacyPolicy()),
+          _buildTile(
+              Icons.description, "Terms of Service", "", TermsOfService()),
           const SectionTitle("Help & Support"),
-          _buildTile(Icons.help_outline, "FAQs", "",FAQs()),
-          _buildTile(Icons.support_agent, "Contact Support", "",ContactSupportScreen()),
-
+          _buildTile(Icons.help_outline, "FAQs", "", FAQs()),
+          _buildTile(Icons.support_agent, "Contact Support", "",
+              ContactSupportScreen()),
           const SectionTitle("Account"),
-          _buildTile(Icons.logout, "Logout", "",LoginScreen()),
-
-
-
+          _buildTile(Icons.logout, "Logout", "", LoginScreen()),
         ],
       ),
-
-
     );
   }
 
@@ -104,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
       title: Text(title),
       subtitle: subtitle.isNotEmpty
           ? Text(subtitle,
-          style: const TextStyle(fontSize: 12, color: Colors.grey))
+              style: const TextStyle(fontSize: 12, color: Colors.grey))
           : null,
       onTap: () {
         Navigator.push(
@@ -115,11 +83,12 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-
-  Widget _buildSwitchTile(String title, String subtitle, bool value, Function(bool) onChanged) {
+  Widget _buildSwitchTile(
+      String title, String subtitle, bool value, Function(bool) onChanged) {
     return SwitchListTile(
       title: Text(title),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      subtitle: Text(subtitle,
+          style: const TextStyle(fontSize: 12, color: Colors.grey)),
       value: value,
       onChanged: onChanged,
     );
