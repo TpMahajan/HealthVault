@@ -6,28 +6,10 @@ import 'Requests.dart';
 import 'Settings.dart';
 import 'UploadDocument.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Dashboard',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      home: const Dashboard1(),
-    );
-  }
-}
-
 class Dashboard1 extends StatefulWidget {
-  const Dashboard1({super.key});
+  final Map<String, dynamic> userData; // 👈 MongoDB se data aayega
+
+  const Dashboard1({super.key, required this.userData});
 
   @override
   State<Dashboard1> createState() => _Dashboard1State();
@@ -53,10 +35,13 @@ class _Dashboard1State extends State<Dashboard1> {
 
   @override
   Widget build(BuildContext context) {
+    // 👇 userData se name nikaal lo (agar null ho to "Patient")
+    final userName = widget.userData['name'] ?? "Patient";
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(appbarTitle, style: TextStyle(color: Colors.black)),
+        title: Text(appbarTitle, style: const TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -73,17 +58,18 @@ class _Dashboard1State extends State<Dashboard1> {
           ListView(
             padding: const EdgeInsets.all(30.0),
             children: [
-              const Row(
+              Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 20,
                     backgroundImage: NetworkImage(
                         'https://cdn-icons-png.flaticon.com/512/9203/9203764.png'),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
-                    'Hello, Patient',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    'Hello, $userName 👋', // ✅ yahan naam show hoga
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hello/Dashboard1.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,9 +23,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class UploadDocument extends StatelessWidget {
+class UploadDocument extends StatefulWidget {
   const UploadDocument({super.key});
 
+  @override
+  State<UploadDocument> createState() => _UploadDocumentState();
+}
+
+class _UploadDocumentState extends State<UploadDocument> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +40,7 @@ class UploadDocument extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Dashboard1()),
+              MaterialPageRoute(builder: (context) => Dashboard1(userData: {},)),
             );
           },
         ),
@@ -55,11 +62,15 @@ class UploadDocument extends StatelessWidget {
 
             // Scan from Camera (Clickable)
             GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Scan from Camera clicked")),
-                );
-                // TODO: Add scan functionality here
+              onTap: () async {
+                final ImagePicker picker = ImagePicker();
+                final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+                if (photo != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Photo taken: ${photo.path}')),
+                  );
+                  // TODO: Add upload or further handling logic here
+                }
               },
               child: Row(
                 children: [
@@ -104,11 +115,17 @@ class UploadDocument extends StatelessWidget {
 
             // Pick from Files/Photos (Clickable)
             GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Pick from Files/Photos clicked")),
+              onTap: () async {
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.any,
                 );
-                // TODO: Add file picker functionality here
+                if (result != null) {
+                  PlatformFile file = result.files.first;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('File picked: ${file.name}')),
+                  );
+                  // TODO: Add upload or further handling logic here
+                }
               },
               child: Row(
                 children: [
@@ -158,11 +175,9 @@ class UploadDocument extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Dashboard1()),
+                    MaterialPageRoute(builder: (context) => Dashboard1(userData: {},)),
                   );
-
-
-                  // Handle close
+                  // TODO: Handle continue logic, e.g., upload selected file if any
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

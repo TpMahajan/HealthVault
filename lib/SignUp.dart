@@ -1,7 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'dbHelper/mongodb.dart';
 import 'main.dart'; // For WelcomeScreen
 
 class SignUpPage extends StatefulWidget {
@@ -20,60 +19,9 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _signUp() async {
-    if (!_formKey.currentState!.validate() || !_agreeToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields & accept terms")),
-      );
-      return;
-    }
 
-    try {
-      // Create user in Firebase Auth
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
 
-      User? user = userCredential.user;
-
-      if (user != null) {
-        // Save extra details in Firestore
-        await _firestore.collection("users").doc(user.uid).set({
-          "name": _nameController.text.trim(),
-          "email": _emailController.text.trim(),
-          "phone": _phoneController.text.trim(),
-          "createdAt": FieldValue.serverTimestamp(),
-        });
-
-        // Navigate to Welcome Screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Account created successfully")),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => WelcomeScreen()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      String message = "Error occurred";
-      if (e.code == "email-already-in-use") {
-        message = "This email is already registered.";
-      } else if (e.code == "weak-password") {
-        message = "Password should be at least 6 characters.";
-      }
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Something went wrong: $e")),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +54,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   border: OutlineInputBorder(borderSide: BorderSide.none),
                 ),
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Name is required' : null,
+                value == null || value.isEmpty ? 'Name is required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -178,7 +126,36 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _signUp,
+                onPressed: () async {
+                  if (_formKey.currentState!.validate() && _agreeToTerms) {
+                    try {
+                      await MongoDataBase.signupUser(
+                        _nameController.text.trim(),
+                        _emailController.text.trim(),
+                        _phoneController.text.trim(),
+                        _passwordController.text.trim(),
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("✅ Account created successfully")),
+                      );
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("❌ Error: $e")),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Please fill all fields & accept Terms")),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -188,6 +165,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   style: TextStyle(color: Colors.white),
                 ),
               ),
+
             ],
           ),
         ),
@@ -195,3 +173,4 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
+

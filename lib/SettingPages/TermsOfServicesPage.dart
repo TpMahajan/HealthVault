@@ -45,32 +45,46 @@ class TermsOfService extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Accept'),
-                  ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
                 ),
-                const SizedBox(width: 16.0),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.blue,
-                      side: const BorderSide(color: Colors.green),
-                    ),
-                    child: const Text('Decline'),
-                  ),
-                ),
-              ],
+                child: const Text('Accept'),
+              ),
             ),
           ),
+          // Padding(
+          //   padding: const EdgeInsets.all(16.0),
+          //   child: Row(
+          //     children: [
+          //       Expanded(
+          //         child: ElevatedButton(
+          //           onPressed: () => Navigator.pop(context),
+          //           style: ElevatedButton.styleFrom(
+          //             backgroundColor: Colors.blue,
+          //             foregroundColor: Colors.white,
+          //           ),
+          //           child: const Text('Accept'),
+          //         ),
+          //       ),
+          //       const SizedBox(width: 16.0),
+          //       // Expanded(
+          //       //   child: OutlinedButton(
+          //       //     onPressed: () => Navigator.pop(context),
+          //       //     style: OutlinedButton.styleFrom(
+          //       //       foregroundColor: Colors.blue,
+          //       //       side: const BorderSide(color: Colors.green),
+          //       //     ),
+          //       //     child: const Text('Decline'),
+          //       //   ),
+          //       // ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );

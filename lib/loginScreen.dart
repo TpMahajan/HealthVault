@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hello/Dashboard1.dart';
 import 'package:hello/SignUp.dart';
-import 'LoginAuthentication.dart';
+
+import 'dbHelper/mongodb.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -11,7 +11,6 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     TextEditingController Email = TextEditingController();
     TextEditingController Password = TextEditingController();
-    final AuthService _auth = AuthService();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F8FF),
@@ -55,21 +54,34 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () async {
-                  await FirebaseAuth.instance
-                      .signInWithEmailAndPassword(
-                    email: Email.text.trim(),
-                    password: Password.text.trim(),
-                  )
-                      .then((value) {
+                  String email = Email.text.trim();
+                  String password = Password.text.trim();
+
+                  if (email.isEmpty || password.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("⚠️ Please enter email & password")),
+                    );
+                    return;
+                  }
+
+                  bool success =
+                  await MongoDataBase.loginUser(email, password);
+
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("✅ Login successful")),
+                    );
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => Dashboard1()),
+                      MaterialPageRoute(builder: (context) => Dashboard1(userData: {},)),
                     );
-                  }).catchError((error) {
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Invalid Credentials !!")),
+                      const SnackBar(
+                          content: Text("❌ Invalid email or password")),
                     );
-                  });
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

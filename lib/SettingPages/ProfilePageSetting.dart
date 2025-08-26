@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -352,46 +350,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      final user = FirebaseAuth.instance.currentUser;
-
-                      if (user != null) {
-                        // Prepare data
-                        final updatedData = {
-                          'name': _nameController.text.trim(),
-                          'email': _emailController.text.trim(),
-                          'mobile': _mobileController.text.trim(),
-                          'aadhaar': _aadhaarController.text.trim(),
-                          'dob': _dobController.text.trim(),
-                          'updatedAt': FieldValue.serverTimestamp(),
-                        };
-
-                        try {
-                          // Save to Firestore (update or create if missing)
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(user.uid)
-                              .set(updatedData, SetOptions(merge: true));
-
-                          // Return updated data to Profile screen
-                          Navigator.pop(context, updatedData);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("Profile updated successfully!")),
-                          );
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text("Failed to update profile: $e")),
-                          );
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("No logged in user")),
-                        );
-                      }
-                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,

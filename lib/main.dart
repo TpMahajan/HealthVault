@@ -1,15 +1,16 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:hello/firebase_options.dart';
 
 import 'SignUp.dart';
+import 'dbHelper/mongodb.dart';
 import 'loginScreen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await MongoDataBase.connect();
   runApp(const MyApp());
 }
+
 
 
 class MyApp extends StatelessWidget {
@@ -34,7 +35,8 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8FF), // Light blue-ish white background
+      backgroundColor:
+          const Color(0xFFF0F8FF), // Light blue-ish white background
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -68,7 +70,6 @@ class WelcomeScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => LoginScreen()),
                   );
-
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
@@ -92,7 +93,6 @@ class WelcomeScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => SignUpPage()),
                   );
-
                 },
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.grey[200],
@@ -110,7 +110,6 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-
             ],
           ),
         ),

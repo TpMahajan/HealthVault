@@ -30,10 +30,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^3.4.0
-  firebase_auth: ^5.2.1
-  cloud_firestore: ^5.4.4
+
   intl: ^0.19.0
+  qr_flutter: ^4.1.0  # For generating QR codes
+  share_plus: ^10.0.0  # For sharing functionality
+  uuid: ^4.4.2  # For generating unique IDs
+  path_provider: ^2.1.4
+  image_picker: ^1.2.0
+  file_picker: ^10.3.2
+  mongo_dart : 0.10.5
   # Or the latest version
 
 
