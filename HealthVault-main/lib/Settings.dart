@@ -39,14 +39,14 @@ class _SettingsPageState extends State<SettingsPage> {
           const SectionTitle("Notifications"),
           _buildSwitchTile(
               "Approvals", "Receive notifications for approvals", approvals,
-              (val) {
-            setState(() => approvals = val);
-          }),
+                  (val) {
+                setState(() => approvals = val);
+              }),
           _buildSwitchTile(
               "Reminders", "Receive notifications for reminders", reminders,
-              (val) {
-            setState(() => reminders = val);
-          }),
+                  (val) {
+                setState(() => reminders = val);
+              }),
           _buildSwitchTile(
               "System", "Receive system notifications", systemNotifs, (val) {
             setState(() => systemNotifs = val);
@@ -72,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
       title: Text(title),
       subtitle: subtitle.isNotEmpty
           ? Text(subtitle,
-              style: const TextStyle(fontSize: 12, color: Colors.grey))
+          style: const TextStyle(fontSize: 12, color: Colors.grey))
           : null,
       onTap: () {
         Navigator.push(
@@ -110,3 +110,4 @@ class SectionTitle extends StatelessWidget {
     );
   }
 }
+

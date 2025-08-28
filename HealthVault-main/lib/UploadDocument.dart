@@ -5,8 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_file/open_file.dart';
 import 'dart:io';
-import 'package:pdfx/pdfx.dart';
 import 'package:path/path.dart' as p;
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart'; // 👈 new import
 
 import 'dbHelper/mongodb.dart';
 
@@ -90,11 +90,7 @@ class _UploadDocumentState extends State<UploadDocument> {
         MaterialPageRoute(
           builder: (_) => Scaffold(
             appBar: AppBar(title: const Text("PDF Preview")),
-            body: PdfView(
-              controller: PdfController(
-                document: PdfDocument.openFile(file.path),
-              ),
-            ),
+            body: SfPdfViewer.file(file), // 👈 syncfusion viewer
           ),
         ),
       );
@@ -211,7 +207,7 @@ class _UploadDocumentState extends State<UploadDocument> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.asset(
-                        "assets/UploadDoc.png", // 👈 file upload asset
+                        "assets/UploadDocument.png", // 👈 file upload asset
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -263,9 +259,9 @@ class _UploadDocumentState extends State<UploadDocument> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 17),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(25),
                   ),
                 ),
                 child: const Text(

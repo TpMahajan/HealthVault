@@ -4,10 +4,10 @@ class RequestsPage extends StatelessWidget {
   const RequestsPage({super.key});
 
   final List<Map<String, String>> doctors = const [
-    {"name": "Dr. Emily Carter", "clinic": "Clinic A", "city": "New York", "photoUrl": "https://via.placeholder.com/150"},
-    {"name": "Dr. David Lee", "clinic": "Clinic B", "city": "Los Angeles", "photoUrl": "https://via.placeholder.com/150"},
-    {"name": "Dr. Sarah Jones", "clinic": "Clinic C", "city": "Chicago", "photoUrl": "https://via.placeholder.com/150"},
-    {"name": "Dr. Michael Brown", "clinic": "Clinic D", "city": "Houston", "photoUrl": "https://via.placeholder.com/150"},
+    {"name": "Dr. Shakuntala Patil", "clinic": "Clinic A", "city": "Nashik", "photoUrl": "https://via.placeholder.com/150"},
+    {"name": "Dr. Rahul Pandey", "clinic": "Clinic B", "city": "Mumbai", "photoUrl": "https://via.placeholder.com/150"},
+    {"name": "Dr. Sandesh Kulkarni", "clinic": "Clinic C", "Nashik": "Chicago", "photoUrl": "https://via.placeholder.com/150"},
+    {"name": "Dr. Reekha Bacchan", "clinic": "Clinic D", "Pune": "Houston", "photoUrl": "https://via.placeholder.com/150"},
   ];
 
   @override
@@ -16,7 +16,7 @@ class RequestsPage extends StatelessWidget {
     
       body: ListView.separated(
         itemCount: doctors.length,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.grey, thickness: 0.2),
+        separatorBuilder: (_, __) => const Divider(height: 10, color: Colors.grey, thickness: 0.2),
         itemBuilder: (context, index) {
           final doctor = doctors[index];
           return GestureDetector(

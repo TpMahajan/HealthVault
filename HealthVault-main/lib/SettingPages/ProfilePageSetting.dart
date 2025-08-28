@@ -9,10 +9,10 @@ class ProfileName extends StatefulWidget {
 }
 
 class _ProfileNameState extends State<ProfileName> {
-  String name = 'Ethan Carter';
-  String email = 'ethan.carter@email.com';
-  String mobile = '+1 (559) 123-4567';
-  String aadhaar = 'XXXX-XXXX-1234';
+  String name = 'Ramesh Solankhe';
+  String email = 'rsolankhi@email.com';
+  String mobile = '+91 9876543210';
+  String aadhaar = 'XXXX-XXXX-7788';
   String dob = '1990-05-15';
 
   @override

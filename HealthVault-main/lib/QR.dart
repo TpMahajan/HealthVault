@@ -49,7 +49,7 @@ class _QRPageState extends State<QRPage> {
     return Scaffold(
       body: Column(
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 60),
           // QR Image Container
           Center(
             child: Container(

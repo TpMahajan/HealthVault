@@ -39,16 +39,16 @@ dependencies:
   image_picker: ^1.2.0
   file_picker: ^10.3.2
   mongo_dart : 0.10.5
-  open_filex: ^4.0.2
+  #open_filex: ^4.0.2
   open_file: ^3.3.2
-  pdfx: ^2.6.0
+  syncfusion_flutter_pdfviewer: ^25.1.39
+
   # Or the latest version
 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons:
-  firebase:
 
 
 
@@ -68,14 +68,17 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-  assets:
-    - assets/UploadDoc.png
-    - assets/PickFromCamera.png
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/UploadDocument.png
+    - assets/PickFromCamera.png
+    - assets/Reports.png
+    - assets/Prescription.png
+    - assets/2851468.png
+    - assets/Insurance12.png
+    - assets/AiAllyLogo.png
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:
