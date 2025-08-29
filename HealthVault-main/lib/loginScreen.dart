@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hello/Dashboard1.dart';
+import 'package:hello/dashboard1.dart';
 import 'package:hello/SignUp.dart';
 
 import 'dbHelper/mongodb.dart';

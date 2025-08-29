@@ -1,14 +1,9 @@
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:hello/Dashboard1.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:open_file/open_file.dart';
 import 'dart:io';
-import 'package:path/path.dart' as p;
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart'; // 👈 new import
-
-import 'dbHelper/mongodb.dart';
+import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
+import 'document_model.dart';
+import 'MyVault.dart';
 
 class UploadDocument extends StatefulWidget {
   const UploadDocument({super.key});
@@ -18,84 +13,56 @@ class UploadDocument extends StatefulWidget {
 }
 
 class _UploadDocumentState extends State<UploadDocument> {
-  List<Map<String, dynamic>> uploadedDocs = [];
-  final String userEmail = "testuser@gmail.com"; // TODO: replace after login
+  final _titleController = TextEditingController();
+  final _notesController = TextEditingController();
+  String? _selectedCategory;
+  DateTime _selectedDate = DateTime.now();
+  File? _selectedFile;
 
-  // 📸 Camera se capture
-  Future<void> _scanFromCamera() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
-    if (photo != null) {
-      File file = File(photo.path);
-      String extension = file.path.split(".").last;
-
-      // ✅ save to MongoDB
-      await MongoDataBase.uploadDocument(
-        userEmail,
-        p.basename(file.path),
-        extension,
-        await file.readAsBytes(),
-      );
-
-      setState(() {
-        uploadedDocs.add({
-          "name": "Captured_${uploadedDocs.length + 1}.$extension",
-          "file": file,
-        });
-      });
-    }
-  }
-
-  // 📂 Files/Photos se pick
-  Future<void> _pickFromFiles() async {
+  // pick file
+  Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       File file = File(result.files.single.path!);
-      String extension = file.path.split(".").last;
-
-      // ✅ save to MongoDB
-      await MongoDataBase.uploadDocument(
-        userEmail,
-        result.files.single.name,
-        extension,
-        await file.readAsBytes(),
-      );
-
       setState(() {
-        uploadedDocs.add({
-          "name": result.files.single.name,
-          "file": file,
-        });
+        _selectedFile = file;
+        _titleController.text = result.files.single.name;
       });
     }
   }
 
-  // 👁 Preview screen
-  void _previewDocument(File file) {
-    final extension = file.path.split(".").last.toLowerCase();
+  // save document → MyVault
+  void _saveDocument() {
+    if (_selectedFile == null || _selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select file & category")),
+      );
+      return;
+    }
 
-    if (["jpg", "jpeg", "png"].contains(extension)) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: const Text("Image Preview")),
-            body: Center(child: Image.file(file)),
-          ),
-        ),
-      );
-    } else if (extension == "pdf") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: const Text("PDF Preview")),
-            body: SfPdfViewer.file(file), // 👈 syncfusion viewer
-          ),
-        ),
-      );
-    } else {
-      OpenFile.open(file.path);
+    final newDoc = Document(
+      type: _selectedCategory!,
+      title: _titleController.text.isNotEmpty
+          ? _titleController.text
+          : _selectedFile!.path.split('/').last,
+      date: DateFormat('yyyy-MM-dd').format(DateTime.now()), // ✅ today’s date
+      path: _selectedFile!.path,
+    );
+
+    MyVault.addDocument(newDoc);
+    Navigator.pop(context);
+  }
+
+  // pick date (optional override)
+  Future<void> _pickDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
     }
   }
 
@@ -103,173 +70,120 @@ class _UploadDocumentState extends State<UploadDocument> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Dashboard1(userData: {}),
-              ),
-            );
-          },
-        ),
-        title: const Text('Upload'),
+        title: const Text("Upload Document"),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
         elevation: 0,
+        backgroundColor: Colors.blueAccent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'How would you like to upload?',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            // Title
+            TextField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: "Document Title",
+                prefixIcon: const Icon(Icons.title),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
-            // Scan from Camera
+            // Category
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              items: ["Bills", "Prescription", "Reports"].map((cat) {
+                return DropdownMenuItem(value: cat, child: Text(cat));
+              }).toList(),
+              onChanged: (val) => setState(() => _selectedCategory = val),
+              decoration: InputDecoration(
+                labelText: "Category",
+                prefixIcon: const Icon(Icons.category),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Date (pre-filled as today)
             GestureDetector(
-              onTap: _scanFromCamera,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Scan from Camera',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 4),
-                        Text('Scan your document',
-                            style: TextStyle(fontSize: 16)),
-                        SizedBox(height: 4),
-                        Text('Use your camera to scan your document',
-                            style:
-                            TextStyle(fontSize: 14, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFE0F7FA),
+              onTap: _pickDate,
+              child: AbsorbPointer(
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    labelText: "Date",
+                    prefixIcon: const Icon(Icons.calendar_today),
+                    hintText: DateFormat('yyyy-MM-dd').format(DateTime.now()), // ✅ always today
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        "assets/PickFromCamera.png", // 👈 camera asset
-                        fit: BoxFit.cover,
-                      ),
-                    ),
                   ),
-                ],
+                ),
               ),
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 32),
-
-            // Pick from Files/Photos
-            GestureDetector(
-              onTap: _pickFromFiles,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Pick from Files/Photos',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 4),
-                        Text('Upload from your device',
-                            style: TextStyle(fontSize: 16)),
-                        SizedBox(height: 4),
-                        Text('Select a file or photo from your device',
-                            style:
-                            TextStyle(fontSize: 14, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Color(0xFF4CAF50).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        "assets/UploadDocument.png", // 👈 file upload asset
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ],
+            // Notes
+            TextField(
+              controller: _notesController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Notes (optional)",
+                alignLabelWithHint: true,
+                prefixIcon: const Icon(Icons.notes),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 32),
-
-            // Uploaded documents list
-            Expanded(
-              child: uploadedDocs.isEmpty
-                  ? const Center(
-                child: Text("No documents uploaded yet"),
-              )
-                  : ListView.builder(
-                itemCount: uploadedDocs.length,
-                itemBuilder: (context, index) {
-                  final doc = uploadedDocs[index];
-                  final file = doc["file"] as File;
-                  final fileName = doc["name"];
-                  final fileExtension = fileName.split(".").last;
-
-                  return ListTile(
-                    leading: const Icon(Icons.insert_drive_file),
-                    title: Text(fileName),
-                    subtitle: Text("Type: $fileExtension"),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.remove_red_eye,
-                          color: Colors.blue),
-                      onPressed: () => _previewDocument(file),
+            // File Preview
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.attach_file, color: Colors.blue),
+                  onPressed: _pickFile,
+                ),
+                Expanded(
+                  child: Text(
+                    _selectedFile != null
+                        ? _selectedFile!.path.split('/').last
+                        : "No file selected",
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontStyle: FontStyle.italic,
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
+            const Spacer(),
 
-            // Continue Button
+            // Save button
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Dashboard1(userData: {})),
-                  );
-                },
+              child: ElevatedButton.icon(
+                onPressed: _saveDocument,
+                icon: const Icon(Icons.save),
+                label: const Text("Save Document"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(vertical: 17),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blueAccent,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  textStyle: const TextStyle(fontSize: 16),
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),
