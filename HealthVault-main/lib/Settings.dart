@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
               "View and edit your personal details", ProfileName()),
           const SectionTitle("Security"),
           _buildTile(Icons.lock, "Password", "", ForgotPasswordScreen()),
-          _buildTile(Icons.fingerprint, "Biometrics", "", ProfileName()),
+          // _buildTile(Icons.fingerprint, "Biometrics", "", ProfileName()),
           const SectionTitle("QR & Sharing"),
           _buildTile(Icons.qr_code, "Regenerate QR", "", QRPage()),
           _buildTile(Icons.share, "Sharing Controls", "", QRPage()),
