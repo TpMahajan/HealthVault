@@ -6,12 +6,11 @@ import 'MyVault.dart';
 import 'QR.dart';
 import 'Requests.dart';
 import 'Settings.dart';
-import 'UploadDocument.dart';
 
 class Dashboard1 extends StatefulWidget {
-  final Map<String, dynamic> userData; // 👈 MongoDB or login/signup data
+  final Map<String, dynamic> userData; // 👈 MongoDB login/signup data
 
-  const Dashboard1({super.key, required this.userData});
+  const Dashboard1({super.key, required this.userData, required userEmail});
 
   @override
   State<Dashboard1> createState() => _Dashboard1State();
@@ -20,7 +19,7 @@ class Dashboard1 extends StatefulWidget {
 class _Dashboard1State extends State<Dashboard1> {
   String appbarTitle = "Dashboard";
   int _currentIndex = 0;
-  final tabs = ["Dashboard", "My Vault", "Qr", "Requests", "Settings"];
+  final tabs = ["Dashboard", "My Vault", "QR", "Requests", "Settings"];
   late PageController _pageController;
 
   @override
@@ -37,7 +36,6 @@ class _Dashboard1State extends State<Dashboard1> {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Extract the user's name from login/signup data
     final userName = widget.userData['name'] ?? "Patient";
 
     return Scaffold(
@@ -56,7 +54,7 @@ class _Dashboard1State extends State<Dashboard1> {
           });
         },
         children: [
-          // Home/Dashboard tab
+          // 🏠 Dashboard tab
           ListView(
             padding: const EdgeInsets.all(30.0),
             children: [
@@ -68,7 +66,6 @@ class _Dashboard1State extends State<Dashboard1> {
                         'https://cdn-icons-png.flaticon.com/512/9203/9203764.png'),
                   ),
                   const SizedBox(width: 8),
-                  // 👈 Updated greeting to use actual user name
                   Text(
                     'Hello, $userName 👋',
                     style: const TextStyle(
@@ -86,12 +83,11 @@ class _Dashboard1State extends State<Dashboard1> {
               ),
               const SizedBox(height: 8),
               ListTile(
-                contentPadding: EdgeInsets.zero,
                 leading: const CircleAvatar(
                   backgroundColor: Color(0xFFE0E0E0),
                   child: Icon(Icons.qr_code, color: Colors.black),
                 ),
-                title: const Text('Generate QR'),
+                title: const Text('Generate / Share QR'),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -100,21 +96,6 @@ class _Dashboard1State extends State<Dashboard1> {
                 },
               ),
               ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const CircleAvatar(
-                  backgroundColor: Color(0xFFE0E0E0),
-                  child: Icon(Icons.share, color: Colors.black),
-                ),
-                title: const Text('Share QR'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => QRPage()),
-                  );
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
                 leading: const CircleAvatar(
                   backgroundColor: Color(0xFFE0E0E0),
                   child: Icon(Icons.list_alt, color: Colors.black),
@@ -133,6 +114,8 @@ class _Dashboard1State extends State<Dashboard1> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
+
+              // 📂 Category Grid
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
@@ -141,176 +124,36 @@ class _Dashboard1State extends State<Dashboard1> {
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.2,
                 children: [
-                  // Reports
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CategoryVaultPage(category: "Reports")),
-                      );
-                    },
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 80,
-                            width: double.infinity,
-                            child: Image.asset("assets/Reports.png", fit: BoxFit.contain),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text('Reports', style: TextStyle(color: Colors.blueGrey)),
-                        ],
-                      ),
-                    ),
+                  _buildCategoryCard(
+                    context,
+                    title: "Reports",
+                    imagePath: "assets/Reports.png",
+                    category: "Reports",
                   ),
-
-                  // Prescriptions
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CategoryVaultPage(category: "Prescriptions")),
-                      );
-                    },
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 80,
-                            width: double.infinity,
-                            child: Image.asset("assets/Prescription.png", fit: BoxFit.contain),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text('Prescriptions', style: TextStyle(color: Colors.blueGrey)),
-                        ],
-                      ),
-                    ),
+                  _buildCategoryCard(
+                    context,
+                    title: "Prescriptions",
+                    imagePath: "assets/Prescription.png",
+                    category: "Prescription",
                   ),
-
-                  // Bills
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CategoryVaultPage(category: "Bills")),
-                      );
-                    },
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 80,
-                            width: double.infinity,
-                            child: Image.asset("assets/2851468.png", fit: BoxFit.contain),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text('Bills', style: TextStyle(color: Colors.blueGrey)),
-                        ],
-                      ),
-                    ),
+                  _buildCategoryCard(
+                    context,
+                    title: "Bills",
+                    imagePath: "assets/2851468.png",
+                    category: "Bills",
                   ),
-
-                  // Insurance Details
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CategoryVaultPage(category: "Insurance")),
-                      );
-                    },
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 80,
-                            width: double.infinity,
-                            child: Image.asset("assets/Insurance12.png", fit: BoxFit.contain),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text('Insurance Details', style: TextStyle(color: Colors.blueGrey)),
-                        ],
-                      ),
-                    ),
+                  _buildCategoryCard(
+                    context,
+                    title: "Insurance Details",
+                    imagePath: "assets/Insurance12.png",
+                    category: "Insurance",
                   ),
                 ],
               ),
-
-              // const SizedBox(height: 24),
-              // const Text(
-              //   'Recent Activity',
-              //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              // ),
-              // const SizedBox(height: 8),
-              // ListTile(
-              //   leading: const Icon(Icons.description, color: Colors.grey),
-              //   title: const Text('Uploaded Report'),
-              //   subtitle: const Text('10/29/23, 10:30 AM'),
-              //   contentPadding: EdgeInsets.zero,
-              //   onTap: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (context) => QRPage()),
-              //     );
-              //   },
-              // ),
-              // ListTile(
-              //   leading: const Icon(Icons.description, color: Colors.grey),
-              //   title: const Text('Uploaded Prescription'),
-              //   subtitle: const Text('10/29/23, 2:15 PM'),
-              //   contentPadding: EdgeInsets.zero,
-              //   onTap: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (context) => QRPage()),
-              //     );
-              //   },
-              // ),
-              // ListTile(
-              //   leading: const Icon(Icons.description, color: Colors.grey),
-              //   title: const Text('Uploaded Bill'),
-              //   subtitle: const Text('10/29/23, 9:45 AM'),
-              //   contentPadding: EdgeInsets.zero,
-              //   onTap: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (context) => QRPage()),
-              //     );
-              //   },
-              // ),
-              const SizedBox(height: 20),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (context) => UploadDocument()),
-              //     );
-              //   },
-              //   style: ElevatedButton.styleFrom(
-              //     backgroundColor: Colors.blue,
-              //     padding: const EdgeInsets.symmetric(vertical: 12),
-              //     shape: RoundedRectangleBorder(
-              //         borderRadius: BorderRadius.circular(8)),
-              //   ),
-              //   child: const Text(
-              //     '+ Upload Document',
-              //     style: TextStyle(color: Colors.white, fontSize: 16),
-              //   ),
-              // ),
             ],
           ),
-          // Vault tab
+
+          // 🔐 Vault tab
           MyVault(),
 
           // QR tab
@@ -323,6 +166,8 @@ class _Dashboard1State extends State<Dashboard1> {
           SettingsPage(),
         ],
       ),
+
+      // ⬇️ Bottom Navbar + Footer
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -364,8 +209,41 @@ class _Dashboard1State extends State<Dashboard1> {
             selectedItemColor: Colors.blue,
             unselectedItemColor: Colors.grey,
           ),
-          const AppFooter(), // Footer
+          const AppFooter(),
         ],
+      ),
+    );
+  }
+
+  /// 🔹 Reusable card builder
+  Widget _buildCategoryCard(BuildContext context,
+      {required String title,
+        required String imagePath,
+        required String category}) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryVaultPage(category: category),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 80,
+              width: double.infinity,
+              child: Image.asset(imagePath, fit: BoxFit.contain),
+            ),
+            const SizedBox(height: 8),
+            Text(title, style: const TextStyle(color: Colors.blueGrey)),
+          ],
+        ),
       ),
     );
   }

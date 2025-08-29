@@ -1,3 +1,4 @@
+// config/database.js
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
@@ -5,6 +6,8 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
+    mongoose.set('strictQuery', true);
+
     const conn = await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -12,7 +15,6 @@ const connectDB = async () => {
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 
-    // Handle connection events
     mongoose.connection.on('error', (err) => {
       console.error('❌ MongoDB connection error:', err);
     });
@@ -25,7 +27,6 @@ const connectDB = async () => {
       console.log('🔄 MongoDB reconnected');
     });
 
-    // Graceful shutdown
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
       console.log('MongoDB connection closed through app termination');

@@ -12,14 +12,15 @@ class LoginScreen extends StatelessWidget {
     TextEditingController Password = TextEditingController();
 
     return Scaffold(
+      resizeToAvoidBottomInset: true, // 👈 keyboard ke liye
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: SingleChildScrollView( // 👈 overflow fix
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 80),
+              const SizedBox(height: 60),
               // Logo and title
               Center(
                 child: Column(
@@ -27,7 +28,7 @@ class LoginScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: Colors.blue[100],
-                      child: Icon(Icons.shield, color: Colors.blue, size: 40),
+                      child: const Icon(Icons.shield, color: Colors.blue, size: 40),
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -51,7 +52,8 @@ class LoginScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 40),
+
               // Email field
               TextField(
                 controller: Email,
@@ -66,6 +68,7 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+
               // Password field
               TextField(
                 controller: Password,
@@ -81,10 +84,11 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
+
               // Log In button with gradient
               Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -103,15 +107,22 @@ class LoginScreen extends StatelessWidget {
                       return;
                     }
 
-                    Map<String, dynamic>? userData = await MongoDataBase.loginUser(email, password);
+                    Map<String, dynamic>? userData =
+                    await MongoDataBase.loginUser(email, password);
 
                     if (userData != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("✅ Login successful")),
                       );
-                      Navigator.pushReplacement(
+                      // ✅ Login successful → Dashboard pe user info bhejna
+                      Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Dashboard1(userData: userData)),
+                        MaterialPageRoute(
+                          builder: (context) => Dashboard1(
+                            userEmail: userData["email"], // DB se aya email
+                            userData: userData,           // pura user data pass kar diya
+                          ),
+                        ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +144,8 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
+
               // Sign up link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -143,14 +155,18 @@ class LoginScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignUpPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const SignUpPage()),
                       );
                     },
-                    child: const Text('Sign up',
-                        style: TextStyle(color: Colors.blue)),
+                    child: const Text(
+                      'Sign up',
+                      style: TextStyle(color: Colors.blue),
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 20), // 👈 Spacer ki jagah safe space
             ],
           ),
         ),

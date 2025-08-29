@@ -5,17 +5,18 @@ import compression from 'compression';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
-// Import configurations
+// Config
 import connectDB from './config/database.js';
 import { initializeFirebase } from './config/firebase.js';
 
-// Import middleware
+// Middleware
 import { apiLimiter } from './middleware/rateLimit.js';
 
-// Import routes
+// Routes
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/user.js';
 import notificationRoutes from './routes/notifications.js';
+import documentRoutes from './routes/document.js';   // 👈 Added
 
 // Load environment variables
 dotenv.config();
@@ -23,55 +24,61 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
+const ENV = process.env.NODE_ENV || 'development';
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+/* ----------------------------- Middleware ----------------------------- */
+
+// Security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
     },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
+    crossOriginEmbedderPolicy: false,
+  })
+);
 
-// CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] // Replace with your Flutter app's domain
-    : ['http://localhost:3000', 'http://localhost:8080'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// CORS
+app.use(
+  cors({
+    origin:
+      ENV === 'production'
+        ? ['https://yourdomain.com'] // Replace with real Flutter web domain
+        : ['http://localhost:3000', 'http://localhost:8080'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-// Body parsing middleware
+// Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Compression middleware
+// Compression
 app.use(compression());
 
-// Logging middleware
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-} else {
-  app.use(morgan('combined'));
-}
+// Logging
+app.use(morgan(ENV === 'development' ? 'dev' : 'combined'));
 
-// Rate limiting
+// Rate limiting for API
 app.use('/api/', apiLimiter);
 
-// Health check endpoint
+/* ----------------------------- Routes ----------------------------- */
+
+// Health check
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
     message: '🚀 Server is running',
+    environment: ENV,
+    uptime: process.uptime(),
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime()
   });
 });
 
@@ -79,8 +86,12 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/documents', documentRoutes);        // 👈 Documents route added
 
-// Root endpoint
+// Static file serving for uploaded docs
+app.use('/uploads', express.static('uploads'));   // 👈 direct access via URL
+
+// Root
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -89,9 +100,9 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       user: '/api/user',
-      notifications: '/api/notifications'
+      notifications: '/api/notifications',
+      documents: '/api/documents',
     },
-    documentation: 'Check the README for API documentation'
   });
 });
 
@@ -99,62 +110,56 @@ app.get('/', (req, res) => {
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: `Route ${req.originalUrl} not found`
+    message: `Route ${req.originalUrl} not found`,
   });
 });
 
 // Global error handler
 app.use((error, req, res, next) => {
   console.error('Global error handler:', error);
-  
-  const statusCode = error.statusCode || 500;
-  const message = error.message || 'Internal Server Error';
-  
-  res.status(statusCode).json({
+
+  res.status(error.statusCode || 500).json({
     success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    message: error.message || 'Internal Server Error',
+    ...(ENV === 'development' && { stack: error.stack }),
   });
 });
 
-// Start server function
+/* ----------------------------- Start Server ----------------------------- */
+
 const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDB();
-    
-    // Initialize Firebase (optional - will continue if fails)
+
+    // Initialize Firebase (optional)
     try {
       initializeFirebase();
-    } catch (firebaseError) {
-      console.warn('⚠️ Firebase initialization failed:', firebaseError.message);
-      console.warn('Push notifications will not work without Firebase configuration');
+    } catch (err) {
+      console.warn('⚠️ Firebase init failed:', err.message);
     }
-    
-    // Start server
+
+    // Start Express server
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-      console.log(`📚 API Base: http://localhost:${PORT}/api`);
+      console.log(`📱 Environment: ${ENV}`);
+      console.log(`🔗 Health: http://localhost:${PORT}/health`);
+      console.log(`📚 API: http://localhost:${PORT}/api`);
     });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
+  } catch (err) {
+    console.error('❌ Failed to start server:', err);
     process.exit(1);
   }
 };
 
-// Handle unhandled promise rejections
+// Handle crashes gracefully
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Promise Rejection:', err);
   process.exit(1);
 });
-
-// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   process.exit(1);
 });
 
-// Start the server
 startServer();

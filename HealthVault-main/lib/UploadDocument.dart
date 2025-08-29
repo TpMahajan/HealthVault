@@ -73,7 +73,7 @@ class _UploadDocumentState extends State<UploadDocument> {
         title: const Text("Upload Document"),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue,
       ),
       body: Container(
         width: double.infinity,
@@ -172,11 +172,14 @@ class _UploadDocumentState extends State<UploadDocument> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _saveDocument,
-                icon: const Icon(Icons.save),
-                label: const Text("Save Document"),
+                icon: const Icon(Icons.save , color: Colors.white,),
+                label: const Text(
+                  'Save Document',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
