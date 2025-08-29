@@ -3,9 +3,11 @@ import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:cross_file/cross_file.dart';
+
+// Import the QR access info page
+import 'HowQrAcessWorks.dart';
 
 class QRPage extends StatefulWidget {
   const QRPage({super.key});
@@ -40,7 +42,9 @@ class _QRPageState extends State<QRPage> {
       final xfile = XFile.fromData(pngBytes, name: 'qr_code.png', mimeType: 'image/png');
       await Share.shareXFiles([xfile], text: 'Share this QR code');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error sharing QR: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sharing QR: $e')),
+      );
     }
   }
 
@@ -50,26 +54,45 @@ class _QRPageState extends State<QRPage> {
       body: Column(
         children: [
           const SizedBox(height: 60),
-          // QR Image Container
+
+          // QR Image Container (Clickable with Hero Animation)
           Center(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.orange[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: RepaintBoundary(
-                key: _repaintKey,
-                child: QrImageView(
-                  data: _qrData,
-                  version: QrVersions.auto,
-                  size: 200.0,
-                  backgroundColor: Colors.white,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    opaque: false, // important → keeps background visible
+                    transitionDuration: const Duration(milliseconds: 400),
+                    reverseTransitionDuration: const Duration(milliseconds: 300),
+                    pageBuilder: (_, __, ___) => QRZoomPage(qrData: _qrData),
+                  ),
+                );
+              },
+              child: Hero(
+                tag: "qrHero",
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: RepaintBoundary(
+                    key: _repaintKey,
+                    child: QrImageView(
+                      data: _qrData,
+                      version: QrVersions.auto,
+                      size: 200.0,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
+
           const SizedBox(height: 16),
+
           const Text(
             "Doctor will scan to request access",
             style: TextStyle(fontSize: 14, color: Colors.black),
@@ -113,10 +136,13 @@ class _QRPageState extends State<QRPage> {
           ),
           const SizedBox(height: 12),
 
-          // "How QR access works?"
-          GestureDetector(
-            onTap: () {
-              // Navigate to help page
+          // "How QR access works?" Button
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const QrAccessWorks()),
+              );
             },
             child: const Text(
               "How QR access works?",
@@ -130,6 +156,83 @@ class _QRPageState extends State<QRPage> {
 
           const Spacer(),
         ],
+      ),
+    );
+  }
+}
+
+/// Zoomed QR Page with Blurred Background
+class QRZoomPage extends StatefulWidget {
+  final String qrData;
+  const QRZoomPage({super.key, required this.qrData});
+
+  @override
+  State<QRZoomPage> createState() => _QRZoomPageState();
+}
+
+class _QRZoomPageState extends State<QRZoomPage> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+
+    _scaleAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _close() {
+    _controller.reverse().then((_) => Navigator.pop(context));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _close,
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // keep original bg visible
+        body: Stack(
+          children: [
+            // Blur the background
+            BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Container(color: Colors.black.withOpacity(0.2)), // frosted effect
+            ),
+
+            // Centered QR with animation
+            Center(
+              child: Hero(
+                tag: "qrHero",
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: QrImageView(
+                      data: widget.qrData,
+                      version: QrVersions.auto,
+                      size: 350.0,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

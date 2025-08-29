@@ -8,7 +8,7 @@ import 'Settings.dart';
 import 'UploadDocument.dart';
 
 class Dashboard1 extends StatefulWidget {
-  final Map<String, dynamic> userData; // 👈 MongoDB se data aayega
+  final Map<String, dynamic> userData; // 👈 MongoDB or login/signup data
 
   const Dashboard1({super.key, required this.userData});
 
@@ -36,7 +36,7 @@ class _Dashboard1State extends State<Dashboard1> {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 userData se name nikaal lo (agar null ho to "Patient")
+    // 👇 Extract the user's name from login/signup data
     final userName = widget.userData['name'] ?? "Patient";
 
     return Scaffold(
@@ -67,6 +67,7 @@ class _Dashboard1State extends State<Dashboard1> {
                         'https://cdn-icons-png.flaticon.com/512/9203/9203764.png'),
                   ),
                   const SizedBox(width: 8),
+                  // 👈 Updated greeting to use actual user name
                   Text(
                     'Hello, $userName 👋',
                     style: const TextStyle(
@@ -338,7 +339,7 @@ class _Dashboard1State extends State<Dashboard1> {
             selectedItemColor: Colors.blue,
             unselectedItemColor: Colors.grey,
           ),
-          const AppFooter(), // 👈 Footer added here
+          const AppFooter(), // Footer
         ],
       ),
     );

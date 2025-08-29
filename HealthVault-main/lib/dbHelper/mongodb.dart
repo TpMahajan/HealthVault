@@ -8,6 +8,7 @@ class MongoDataBase {
   static late DbCollection userCollection;
   static late DbCollection docCollection;
 
+  // Connect to MongoDB
   static Future<void> connect() async {
     try {
       db = await Db.create(MONGO_URL);
@@ -41,20 +42,27 @@ class MongoDataBase {
   }
 
   // Login
-  static Future<bool> loginUser(String email, String password) async {
+  static Future<Map<String, dynamic>?> loginUser(String email, String password) async {
     try {
+      // Fetch user from MongoDB based on email & password
       final user = await userCollection.findOne({
-        "email": email.trim().toLowerCase(),
-        "password": password.trim(),
+        'email': email.trim().toLowerCase(),
+        'password': password,
       });
-      return user != null;
+
+      if (user != null) {
+        // Return the user map (contains name, email, phone, etc.)
+        return user;
+      } else {
+        return null; // login failed
+      }
     } catch (e) {
-      print("❌ Error in login: $e");
-      return false;
+      print("❌ Error during login: $e");
+      return null;
     }
   }
 
-  // ✅ Upload Document
+  // Upload Document
   static Future<void> uploadDocument(
       String userEmail, String fileName, String fileType, Uint8List fileBytes) async {
     try {
@@ -75,14 +83,14 @@ class MongoDataBase {
     }
   }
 
-  // ✅ Get Documents
+  // Get User Documents
   static Future<List<Map<String, dynamic>>> getUserDocuments(String email) async {
     try {
       final docs = await docCollection.find({"email": email}).toList();
 
       print("📂 Found ${docs.length} documents for $email");
 
-      // clean map for flutter (remove _id ObjectId format)
+      // Clean map for Flutter (remove _id ObjectId format)
       return docs.map((doc) {
         return {
           "fileName": doc["fileName"],
@@ -97,7 +105,7 @@ class MongoDataBase {
     }
   }
 
-  // ✅ Download Document
+  // Download Document
   static Future<void> downloadDocument(
       Map<String, dynamic> document, String savePath) async {
     try {

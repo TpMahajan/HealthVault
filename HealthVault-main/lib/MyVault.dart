@@ -1,23 +1,37 @@
 import 'package:flutter/material.dart';
-
 import 'UploadDocument.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+// Document Detail Page
+class DocumentDetailPage extends StatelessWidget {
+  final String title;
+  final String type;
+  final String date;
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const DocumentDetailPage({
+    super.key,
+    required this.title,
+    required this.type,
+    required this.date,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'My Vault',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Type: $type", style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 10),
+            Text("Uploaded on: $date", style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 20),
+            const Text("Here you can show the document preview or details.",
+                style: TextStyle(fontSize: 14, color: Colors.grey)),
+          ],
+        ),
       ),
-      home: const MyVault(),
     );
   }
 }
@@ -26,17 +40,13 @@ class Document {
   final String type;
   final String title;
   final String date;
-  final IconData icon;
-  final Color iconColor;
-  final Color bgColor;
+  final String image; // Asset image
 
   Document({
     required this.type,
     required this.title,
     required this.date,
-    required this.icon,
-    required this.iconColor,
-    required this.bgColor,
+    required this.image,
   });
 }
 
@@ -49,33 +59,26 @@ class MyVault extends StatefulWidget {
 
 class _MyVaultState extends State<MyVault> {
   final TextEditingController _searchController = TextEditingController();
-  String _sortBy = 'Date'; // Default sort by Date
+  String _sortBy = 'Date'; // Default sort
   List<Document> _allDocuments = [
     Document(
       type: 'Report',
       title: 'Blood Test Results',
       date: '2024-01-15',
-      icon: Icons.description,
-      iconColor: Colors.red,
-      bgColor: Colors.grey[200]!,
+      image: 'assets/BloodReport.png',
     ),
     Document(
       type: 'Prescription',
       title: 'Medication for Allergies',
       date: '2023-12-20',
-      icon: Icons.playlist_add_check,
-      iconColor: Colors.white,
-      bgColor: Colors.blueGrey[800]!,
+      image: 'assets/Prescription.png',
     ),
     Document(
       type: 'Bill',
       title: 'Hospital Bill - Consultation',
       date: '2023-11-05',
-      icon: Icons.attach_money,
-      iconColor: Colors.green,
-      bgColor: Colors.teal[100]!,
+      image: 'assets/HospitalBill.png',
     ),
-    // Add more documents here if needed
   ];
   late List<Document> _displayedDocuments;
 
@@ -83,7 +86,7 @@ class _MyVaultState extends State<MyVault> {
   void initState() {
     super.initState();
     _displayedDocuments = List.from(_allDocuments);
-    _sortDocuments(); // Initial sort
+    _sortDocuments();
     _searchController.addListener(() {
       _filterDocuments(_searchController.text);
     });
@@ -96,7 +99,7 @@ class _MyVaultState extends State<MyVault> {
         return doc.title.toLowerCase().contains(lowerQuery) ||
             doc.type.toLowerCase().contains(lowerQuery);
       }).toList();
-      _sortDocuments(); // Re-sort after filtering
+      _sortDocuments();
     });
   }
 
@@ -106,6 +109,10 @@ class _MyVaultState extends State<MyVault> {
         _displayedDocuments.sort((a, b) => a.date.compareTo(b.date));
       } else if (_sortBy == 'Category') {
         _displayedDocuments.sort((a, b) => a.type.compareTo(b.type));
+      } else if (_sortBy == 'Title') {
+        _displayedDocuments.sort((a, b) => a.title.compareTo(b.title));
+      } else if (_sortBy == 'Size') {
+        // Placeholder (add file size property later)
       }
     });
   }
@@ -121,8 +128,9 @@ class _MyVaultState extends State<MyVault> {
     return Scaffold(
       body: Column(
         children: [
+          // Search bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -137,110 +145,117 @@ class _MyVaultState extends State<MyVault> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+
+          // Filter chips
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          //   child: SingleChildScrollView(
+          //     scrollDirection: Axis.horizontal,
+          //     child: Row(
+          //       children: const [
+          //         Chip(label: Text('All'), backgroundColor: Color(0xFFE8F0FE)),
+          //         SizedBox(width: 8),
+          //         Chip(label: Text('Reports'), backgroundColor: Color(0xFFE8F0FE)),
+          //         SizedBox(width: 8),
+          //         Chip(label: Text('Prescriptions'), backgroundColor: Color(0xFFE8F0FE)),
+          //         SizedBox(width: 8),
+          //         Chip(label: Text('Bills'), backgroundColor: Color(0xFFE8F0FE)),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
+          const SizedBox(height: 12),
+
+          // Sort by dropdown aligned left
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  Chip(
-                    label: const Text('All'),
-                    backgroundColor: const Color(0xFFE8F0FE),
-                  ),
-                  const SizedBox(width: 8),
-                  Chip(
-                    label: const Text('Reports'),
-                    backgroundColor: const Color(0xFFE8F0FE),
-                  ),
-                  const SizedBox(width: 8),
-                  Chip(
-                    label: const Text('Prescriptions'),
-                    backgroundColor: const Color(0xFFE8F0FE),
-                  ),
-                  const SizedBox(width: 8),
-                  Chip(
-                    label: const Text('Bills'),
-                    backgroundColor: const Color(0xFFE8F0FE),
-                  ),
-                ],
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: DropdownButton<String>(
+                value: _sortBy,
+                underline: const SizedBox(),
+                items: ['Date', 'Category', 'Title', 'Size'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(
+                      'Sort by $value',
+                      style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      _sortBy = newValue;
+                      _sortDocuments();
+                    });
+                  }
+                },
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: DropdownButton<String>(
-              value: _sortBy,
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-              underline: const SizedBox(), // Remove underline
-              items: ['Date', 'Category'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(
-                    'Sort by $value',
-                    style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+
+          const SizedBox(height: 12),
+
+          // Document list
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              itemCount: _displayedDocuments.length,
+              itemBuilder: (context, index) {
+                final doc = _displayedDocuments[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DocumentDetailPage(
+                          title: doc.title,
+                          type: doc.type,
+                          date: doc.date,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Texts
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(doc.type, style: const TextStyle(color: Colors.blue, fontSize: 12)),
+                              Text(doc.title,
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text('Uploaded on ${doc.date}',
+                                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                            ],
+                          ),
+                          // Image asset instead of icon
+                          Container(
+                            width: 80,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Image.asset(doc.image, fit: BoxFit.contain),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 );
-              }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    _sortBy = newValue;
-                    _sortDocuments();
-                  });
-                }
               },
             ),
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              children: _displayedDocuments.map((doc) {
-                return Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              doc.type,
-                              style: const TextStyle(color: Colors.blue, fontSize: 12),
-                            ),
-                            Text(
-                              doc.title,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Uploaded on ${doc.date}',
-                              style: const TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          width: 80,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: doc.bgColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            doc.icon,
-                            color: doc.iconColor,
-                            size: 40,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
+
+          // Upload Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: ElevatedButton.icon(

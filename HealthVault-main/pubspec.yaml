@@ -78,6 +78,8 @@ flutter:
     - assets/2851468.png
     - assets/Insurance12.png
     - assets/AiAllyLogo.png
+    - assets/BloodReport.png
+    - assets/HospitalBill.png
 
 
   # To add assets to your application, add an assets section, like this:

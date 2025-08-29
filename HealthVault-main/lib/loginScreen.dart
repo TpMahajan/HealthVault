@@ -59,30 +59,29 @@ class LoginScreen extends StatelessWidget {
 
                   if (email.isEmpty || password.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("⚠️ Please enter email & password")),
+                      const SnackBar(content: Text("⚠️ Please enter email & password")),
                     );
                     return;
                   }
 
-                  bool success =
-                  await MongoDataBase.loginUser(email, password);
+                  // Fetch user data instead of boolean
+                  Map<String, dynamic>? userData = await MongoDataBase.loginUser(email, password);
 
-                  if (success) {
+                  if (userData != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("✅ Login successful")),
                     );
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => Dashboard1(userData: {},)),
+                      MaterialPageRoute(builder: (context) => Dashboard1(userData: userData)),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("❌ Invalid email or password")),
+                      const SnackBar(content: Text("❌ Invalid email or password")),
                     );
                   }
                 },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
